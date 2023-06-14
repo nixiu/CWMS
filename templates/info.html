@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block main_body %}                
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h4>
+        信息提示:
+      </h4>
+    </section>
+
+    <div class="pad margin no-print">
+      <div class="callout callout-info" style="margin-bottom: 0!important;padding-left: 50px">
+        <h3><i class="fa fa-exclamation-triangle"></i>  &nbsp; {{ info }}</h3>
+      </div>
+    </div>
+{% endblock %}
+{% block Sidebar_Menu %}
+  <ul class="sidebar-menu" data-widget="tree">
+    <li class="header">主要导航</li>
+    
+    <li  class="active"><a href="{% url 'index' %}"><i class="fa fa-home"></i> <span>首页</span></a></li>
+    
+    <li><a href="{% url 'employee_index' 1 %}"><i class="fa fa-users"></i> <span>员工管理</span></a></li>
+    <li><a href="{% url 'commodity_index' 1 %}"><i class="fa fa-sitemap"></i> <span>商品管理</span></a></li>
+    <li><a href="{% url 'warehouse_index' 1 %}"><i class="fa fa-key"></i> <span>仓库管理</span></a></li>
+    <li class="treeview">
+      <a href="category.html"><i class="fa fa-cutlery"></i> <span>往来单位</span>
+        <span class="pull-right-container">
+          <i class="fa fa-angle-right pull-down"></i>
+        </span>
+      </a>
+      <ul class="treeview-menu">
+        <li><a href="{% url 'client_index' 1 %}"> <i class="fa fa-circle-o"></i> 客户</a></li>
+        <li><a href="{% url 'suppliers_index' 1 %}"> <i class="fa fa-circle-o"></i> 供货商</a></li>
+      </ul>
+    </li>
+    <li class="treeview">
+      <a href="orders.html"><i class="fa fa-shopping-cart"></i> <span>订单管理</span>
+        <span class="pull-right-container">
+          <i class="fa fa-angle-right pull-down"></i>
+        </span>
+      </a>
+      <ul class="treeview-menu">
+        <li><a href="{% url 'sale_index' 1 %}"> <i class="fa fa-circle-o"></i> 销售单</a></li>
+        <li><a href="{% url 'purchase_index' 1 %}"> <i class="fa fa-circle-o"></i> 进货单</a></li>
+        <li><a href="{% url 'addorder_index' 1 %}"> <i class="fa fa-circle-o"></i> 添加订单</a></li>
+      </ul>
+    </li>
+
+  </ul>
+  {% endblock%}

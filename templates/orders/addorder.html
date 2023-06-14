@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main_body %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        订单添加
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="{% url 'index' %}"><i class="fa fa-dashboard"></i> 首页</a></li>
+        <li class="active">添加订单</li>
+      </ol>
+    </section>
+
+    <!-- 添加订单界面 -->
+    <section class="content container-fluid">
+
+      
+        <div class="col-xs-4" >
+            <div class="panel panel-warning">
+                <div class="panel-heading"><span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> 订单</div>
+                    <table class="table table-striped">
+                        <tr>
+                            <th width="30">序</th>
+                            <th>商品</th>
+                            <th width="72">数量</th>
+                            <th width="45">价格</th>
+                            <th>删除</th>
+                        </tr>
+                        {% for commodity in request.session.addorderlist.values %}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{commodity.name}}</td>
+
+                            <td class="quantity">
+                              <input type="text" id="quantity" value="{{commodity.quantity}}" onblur="doGet('{{commodity.id}}',this.value);">
+                              <!-- <button id="updateButton" >确定</button> -->
+                            </td>
+                            <!-- <td class="price">{{commodity.unitprice}}</td> -->
+                            {% if request.session.ordertype == '1' %}
+                                <td class="price">{{commodity.unitprice}}</td> 
+                            {% elif request.session.ordertype == '2' %}
+                                <td class="price">{{commodity.costprice}}</td>
+                            {% endif %}  
+                            <td><a href="{% url 'addorder_delete' commodity.id %}" class="btn btn-danger btn-xs" role="button">删除</a></td>
+                        </tr>
+                        {% endfor %}
+
+                    </table>
+                    <li class="list-group-item">
+                      <b>订单类型: &nbsp; </b>
+                        <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                        <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp;
+                        <!-- {% if request.session.ordertype == '1' %}
+                          <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                          <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
+                        {% elif request.session.ordertype == '2' %}
+                          <input type="radio" name="ordertype"  value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                          <input type="radio" name="ordertype" checked value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
+                        {% endif %}   -->
+                    </li>
+
+                    <li class="list-group-item">
+                      <b>往来单位: &nbsp; </b>
+                      <select class="singleSelect" >
+                        {% for corp in request.session.corplist.values %}
+                        <option value="{{ corp.id }}" name="corpid">{{ corp.cor_name }}</option>
+                        {% endfor %}                   
+                      </select>
+                    </li>
+                    <div class="panel-footer" style="height:50px">
+                        <div style="width:120px;float:left;margin:5px 0px;">合计：￥<span style="color:red;font-weight:bold;">{{request.session.total_money}}</span> 元</div>
+                        <button type="button" onclick="window.location='{% url 'addorder_clear' %}'" class="btn btn-warning" style="width:70px;float:left">清 &nbsp; 空</button>
+                        <button type="button" onclick="dosubmit()" class="btn btn-warning" style="width:80px;float:right">结 &nbsp; 算</button>
+                    </div>
+
+                  </div>
+        </div>
+        <div class="col-xs-8" >
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">商品信息表</h3>
+              <!-- 搜索 -->
+              <div class="box-tools">
+                <form action="{% url 'commodity_index' 1 %}" method="get">
+                  <div class="input-group input-group-sm" style="width:150px;">
+                    <input type="text" name="keyword" class="form-control pull-right" placeholder="商品名称"></input>
+                    <div class="input-group-btn">
+                      <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive no-padding">
+              <table class="table table-hover">
+                <tr>
+                  <th>商品ID</th>
+                  <th>商品名称</th>
+                  <th>单价</th>
+                  <th>成本价</th>
+                  <th>库存量</th>
+                  <th>库存金额</th>
+                  <th width="200">操作</th>
+                </tr>
+                
+                {% for vo in Commoditylist %}
+                <tr>
+                    <td>{{ vo.commodity.id }}</td>
+                    <td>{{ vo.commodity.name }}</td>
+                    <td>{{ vo.commodity.unitprice }}</td>
+                    <td>{{ vo.commodity.costprice }}</td>
+                    <td>{{ vo.quantity }}</td>
+                    <td>{{ vo.amount }}</td>
+                    <td>
+                      <a href="{% url 'addorder_add' vo.commodity.id %}" class="btn btn-warning btn-xs pull-left" role="button"><span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> 添加</a></div>
+                    
+                    </td>
+                  </tr>
+                {% endfor %}
+              </table>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer clearfix">
+              <a role="button" href="{% url 'commodity_add' %}" class="btn btn-primary">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加商品</a>
+
+              <ul class="pagination pagination-sm no-margin pull-right">
+                
+                <li><a href="{% url 'commodity_index' pIndex|add:-1 %}?{{mywhere|join:'&'}}">&laquo;</a></li><!--上一页按钮-->
+                {% for p in plist %}
+                  <li {% if p == pIndex %} class=active {%endif%}><a href="{% url 'commodity_index' p%}?{{mywhere|join:'&'}}">{{p}}</a></li>
+                {% endfor %}
+                <li><a href="{% url 'commodity_index' pIndex|add:1 %}?{{mywhere|join:'&'}}">&raquo;</a></li><!--下一页按钮-->
+
+              </ul>
+            </div>
+          </div>
+          <!-- /.box -->
+        </div>
+        </div>
+
+        <script src="{% static 'myweb/js/jquery.min.js'%}"></script>
+        <script src="{% static 'myweb/js/bootstrap.min.js'%}"></script>
+        <script type="text/javascript">
+          function doGet(commodityId,newQuantity){
+            window.location="{% url 'addorder_change'%}?pid="+commodityId+"&quantity="+newQuantity;
+          }
+          function docorp(ordertype){
+            window.location="{% url 'addorder_corpfillter'%}?type="+ordertype;
+          }
+          function dosubmit(){
+              if($("table.table-striped tr").length==1){
+                  alert("订单中没有商品信息！");
+                  return;
+              }
+              if(!window.confirm("订单已完成？")){
+                  return;
+              }
+              var corpid = $("option[name='corpid']:selected").val();
+              $.ajax({
+                  type:'get',
+                  url:"{% url 'addorder_insert' %}",
+                  dataType:'text',
+                  data:{corpid:corpid},
+                  async: false,
+                  success:function(res){
+                      if(res == "Y"){
+                          alert("订单添加成功！");
+                          window.location.href="{% url 'addorder_index' 1 %}";
+                      }else{
+                          alert("订单处理失败！");
+                      }
+                  },
+              });
+      
+          }
+        </script>
+
+    </section>
+    <!-- /.content -->
+{% endblock %}
+{% block Sidebar_Menu %}
+  <ul class="sidebar-menu" data-widget="tree">
+    <li class="header">主要导航</li>
+    
+    <li ><a href="{% url 'index' %}"><i class="fa fa-home"></i> <span>首页</span></a></li>
+    
+    <li><a href="{% url 'employee_index' 1 %}"><i class="fa fa-users"></i> <span>员工管理</span></a></li>
+    <li><a href="{% url 'commodity_index' 1 %}"><i class="fa fa-sitemap"></i> <span>商品管理</span></a></li>
+    <li><a href="{% url 'warehouse_index' 1 %}"><i class="fa fa-key"></i> <span>仓库管理</span></a></li>
+    <li class="treeview">
+      <a href="category.html"><i class="fa fa-user"></i> <span>往来单位</span>
+        <span class="pull-right-container">
+          <i class="fa fa-angle-right pull-down"></i>
+        </span>
+      </a>
+      <ul class="treeview-menu">
+        <li><a href="{% url 'client_index' 1 %}"> <i class="fa fa-circle-o"></i> 客户</a></li>
+        <li><a href="{% url 'suppliers_index' 1 %}"> <i class="fa fa-circle-o"></i> 供货商</a></li>
+      </ul>
+    </li>
+    <li class="treeview">
+      <a href="orders.html"><i class="fa fa-shopping-cart"></i> <span>订单管理</span>
+        <span class="pull-right-container">
+          <i class="fa fa-angle-right pull-down"></i>
+        </span>
+      </a>
+      <ul class="treeview-menu">
+        <li><a href="{% url 'sale_index' 1 %}"> <i class="fa fa-circle-o"></i> 销售单</a></li>
+        <li><a href="{% url 'purchase_index' 1 %}"> <i class="fa fa-circle-o"></i> 进货单</a></li>
+        <li><a href="{% url 'addorder_index' 1 %}"> <i class="fa fa-circle-o"></i> 添加订单</a></li>
+      </ul>
+    </li>
+
+  </ul>
+  {% endblock%}
