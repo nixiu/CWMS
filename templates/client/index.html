@@ -97,17 +97,17 @@
     <li><a href="{% url 'employee_index' 1 %}"><i class="fa fa-users"></i> <span>员工管理</span></a></li>
     <li><a href="{% url 'commodity_index' 1 %}"><i class="fa fa-sitemap"></i> <span>商品管理</span></a></li>
     <li><a href="{% url 'warehouse_index' 1 %}"><i class="fa fa-key"></i> <span>仓库管理</span></a></li>
-    <li class="treeview">
+    <li class="treeview menu-open">
       <a href="category.html"><i class="fa fa-user"></i> <span>往来单位</span>
         <span class="pull-right-container">
-          <i class="fa fa-angle-right pull-down"></i>
+          <i class="fa fa-angle-down pull-down"></i>
         </span>
       </a>
-      <ul class="treeview-menu">
+      <ul class="treeview-menu" style="display: block;">
         <li><a href="{% url 'client_index' 1 %}"> <i class="fa fa-circle-o"></i> 客户</a></li>
         <li><a href="{% url 'suppliers_index' 1 %}"> <i class="fa fa-circle-o"></i> 供货商</a></li>
       </ul>
-    </li>
+</li>
     <li class="treeview">
       <a href="orders.html"><i class="fa fa-shopping-cart"></i> <span>订单管理</span>
         <span class="pull-right-container">
@@ -123,3 +123,17 @@
 
   </ul>
   {% endblock%}
+
+  {% block extra_scripts %}
+  <script>
+    $(document).ready(function(){
+      $(".treeview").click(function(){
+        if($(this).hasClass("menu-open")){
+          $(this).find(".pull-down").removeClass("fa-angle-down").addClass("fa-angle-right");
+        }else{
+          $(this).find(".pull-down").removeClass("fa-angle-right").addClass("fa-angle-down");
+        }
+      });
+    });
+    </script>
+  {% endblock %}

@@ -49,15 +49,17 @@
                     </table>
                     <li class="list-group-item">
                       <b>订单类型: &nbsp; </b>
-                        <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
-                        <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp;
-                        <!-- {% if request.session.ordertype == '1' %}
-                          <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
-                          <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
-                        {% elif request.session.ordertype == '2' %}
-                          <input type="radio" name="ordertype"  value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
-                          <input type="radio" name="ordertype" checked value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
-                        {% endif %}   -->
+
+                      {% if request.session.ordertype == '1' %}
+                      <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                      <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
+                    {% elif request.session.ordertype == '2' %}
+                      <input type="radio" name="ordertype"  value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                      <input type="radio" name="ordertype" checked value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
+                    {% else %}
+                      <input type="radio" name="ordertype" checked value="1" onclick="docorp(this.value);"> 销售单 &nbsp; 
+                      <input type="radio" name="ordertype" value="2" onclick="docorp(this.value);"> 供货单 &nbsp; 
+                    {% endif %} 
                     </li>
 
                     <li class="list-group-item">
@@ -201,13 +203,13 @@
         <li><a href="{% url 'suppliers_index' 1 %}"> <i class="fa fa-circle-o"></i> 供货商</a></li>
       </ul>
     </li>
-    <li class="treeview">
+    <li class="treeview menu-open">
       <a href="orders.html"><i class="fa fa-shopping-cart"></i> <span>订单管理</span>
         <span class="pull-right-container">
-          <i class="fa fa-angle-right pull-down"></i>
+          <i class="fa fa-angle-down pull-down"></i>
         </span>
       </a>
-      <ul class="treeview-menu">
+      <ul class="treeview-menu" style="display: block;">
         <li><a href="{% url 'sale_index' 1 %}"> <i class="fa fa-circle-o"></i> 销售单</a></li>
         <li><a href="{% url 'purchase_index' 1 %}"> <i class="fa fa-circle-o"></i> 进货单</a></li>
         <li><a href="{% url 'addorder_index' 1 %}"> <i class="fa fa-circle-o"></i> 添加订单</a></li>
@@ -216,3 +218,30 @@
 
   </ul>
   {% endblock%}
+  {% block extra_scripts %}
+  <script>
+    // 每当选择改变，就把新的值存入sessionStorage
+    $(".singleSelect").change(function() {
+      sessionStorage.setItem("selectedCorpid", $(this).val());
+    });
+  
+    // 当页面加载完成后，从sessionStorage取值设置选择
+    $(document).ready(function() {
+      var selectedCorpid = sessionStorage.getItem("selectedCorpid");
+      if (selectedCorpid) {
+        $(".singleSelect").val(selectedCorpid);
+      }
+    });
+  </script>
+  <script>
+    $(document).ready(function(){
+      $(".treeview").click(function(){
+        if($(this).hasClass("menu-open")){
+          $(this).find(".pull-down").removeClass("fa-angle-down").addClass("fa-angle-right");
+        }else{
+          $(this).find(".pull-down").removeClass("fa-angle-right").addClass("fa-angle-down");
+        }
+      });
+    });
+    </script>
+  {% endblock %}

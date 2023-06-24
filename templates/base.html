@@ -24,6 +24,11 @@
   <![endif]-->
   <!-- Google Font -->
   <link rel="stylesheet" href="{% static 'myweb/local/css/google_fonts.css'%}">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+</head>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -262,6 +267,7 @@
 <script src="{% static 'myweb/dist/js/edu-modal-alert-confirm.js'%}"></script>
 
 <!-- 此处可以添加SimLoopl和FastClick插件，用于增强用户体验。 -->
+{% block extra_scripts %}{% endblock %}
 
 <script type="text/javascript">
 	function Dodel(url){

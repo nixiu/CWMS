@@ -7,42 +7,49 @@ from django.core.paginator import Paginator  # 分页用
 from datetime import datetime
 import random
 from myweb.models import Employee
+from django.core.cache import cache
 
-
-def index(request,pIndex):
+def index(request, pIndex):
     """浏览信息"""
-    umod = Employee.objects
-    mywhere=[]#封装条件
-    ulist = umod.filter(type__lt=3)#3类型的员工账号已经无效不应该显示
+    cache_key = "employee_list"
+    cached_data = cache.get(cache_key)
 
+    if cached_data:
+        # 如果缓存中存在数据，则直接使用缓存数据
+        ulist = cached_data
+    else:
+        umod = Employee.objects
+        ulist = umod.filter(type__lt=3)  # 3类型的员工账号已经无效不应该显示
+
+        
+
+        # 将数据缓存到Redis中，有效期设置为1小时
+        cache.set(cache_key, ulist, timeout=3600)
     # 获取、判断并封装关keyword键搜索
-    kw = request.GET.get("keyword",None)
+    kw = request.GET.get("keyword", None)
     if kw:
         # 查询员工账号或昵称中只要含有关键字的都可以
-        ulist = ulist.filter( Q(name__contains=kw) | Q(user_name__contains=kw))
-        mywhere.append("keyword="+kw)
+        ulist = ulist.filter(Q(name__contains=kw) | Q(user_name__contains=kw))
 
     # 获取、判断并封装状态type搜索条件
-    type = request.GET.get('type','')
+    type = request.GET.get('type', '')
     if type != '':
         ulist = ulist.filter(type=type)
-        mywhere.append("type="+type)
-        
     # 执行分页处理
     pIndex = int(pIndex)
     page = Paginator(ulist, 10)  # 以10条每页创建分页对象
     maxpages = page.num_pages  # 最大页数
-    
-    # p判断页数是否越界
+
+    # 判断页数是否越界
     if pIndex > maxpages:
         pIndex = maxpages
     if pIndex < 1:
         pIndex = 1
-    list2 = page.page(pIndex)#获取当前页数据
-    plist = page.page_range#获取页码列表信息
-    
+    list2 = page.page(pIndex)  # 获取当前页数据
+    plist = page.page_range  # 获取页码列表信息
+
     # 封装信息加载模板
-    context= {"Employeelist":list2, 'plist':plist, 'pIndex':pIndex, 'maxpages':maxpages, 'mywhere':mywhere}
+    context = {"Employeelist": list2, 'plist': plist, 'pIndex': pIndex, 'maxpages': maxpages}
 
     return render(request, 'employee/index.html', context)
 
@@ -68,6 +75,8 @@ def insert(request):
         ob.phone=request.POST["phone"]
         ob.type = request.POST["type"]
         ob.save()
+        cache_key = "employee_list"
+        cache.delete(cache_key)
         context={"info":"添加成功！"}
     except Exception as err:
         print(err)
@@ -80,6 +89,8 @@ def delete(request, uid=0):
         ob = Employee.objects.get(id=uid)
         ob.type = 3#失效
         ob.save()
+        cache_key = "employee_list"
+        cache.delete(cache_key)
         context = {"info":"删除成功！"}
     except Exception as err:
         print(err)
@@ -107,6 +118,8 @@ def update(request, uid):
         ob.phone=request.POST['phone']
         ob.user_name=request.POST['user_name']
         ob.save()
+        cache_key = "employee_list"
+        cache.delete(cache_key)
         context={"info":"修改成功！"}
     except Exception as err:
         print(err)

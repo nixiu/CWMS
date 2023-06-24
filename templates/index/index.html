@@ -20,16 +20,29 @@
     <div class="row">
       <div class="col-lg-3 col-xs-6">
         <!-- small box -->
-        <div class="small-box bg-aqua">
+        <div class="small-box bg-blue">
           <div class="inner">
-            <h3>{{ orlen }}</h3>
-
-            <p>新订单</p>
+            <h3>{{ today_orders_count }}</h3>
+            <p>今日订单</p>
           </div>
           <div class="icon">
-            <i class="ion ion-bag"></i>
+            <i class="ion ion-pie-graph"></i>
           </div>
-          <a href="#" class="small-box-footer">更多信息 <i class="fa fa-arrow-circle-right"></i></a>
+          <a href="#" class="small-box-footer" data-toggle="modal" data-target="#todayChartModal">查看 <i class="fa fa-arrow-circle-right"></i></a>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-xs-6">
+        <!-- small box -->
+        <div class="small-box bg-red">
+          <div class="inner">
+            <h3>7 days</h3>
+            <p>销量统计</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-pie-graph"></i>
+          </div>
+          <a href="#" class="small-box-footer" data-toggle="modal" data-target="#chartModal">查看 <i class="fa fa-arrow-circle-right"></i></a>
         </div>
       </div>
       <!-- ./col -->
@@ -44,7 +57,7 @@
           <div class="icon">
             <i class="ion ion-stats-bars"></i>
           </div>
-          <a href="#" class="small-box-footer">更多信息 <i class="fa fa-arrow-circle-right"></i></a>
+          <a href="#" class="small-box-footer" id="more-info-link">更多信息 <i class="fa fa-arrow-circle-right"></i></a>
         </div>
       </div>
       <!-- ./col -->
@@ -54,33 +67,66 @@
           <div class="inner">
             <h3>{{ corlen }}</h3>
 
-            <p>客户数量</p>
+            <p>往来单位数量</p>
           </div>
           <div class="icon">
             <i class="ion ion-person-add"></i>
           </div>
-          <a href="#" class="small-box-footer">更多信息 <i class="fa fa-arrow-circle-right"></i></a>
+          <a href="{% url 'client_index' 1 %}" class="small-box-footer">详细信息 <i class="fa fa-arrow-circle-right"></i></a>
         </div>
       </div>
       <!-- ./col -->
-      <div class="col-lg-3 col-xs-6">
-        <!-- small box -->
-        <div class="small-box bg-red">
-          <div class="inner">
-            <h3>65</h3>
-
-            <p>待开发</p>
-          </div>
-          <div class="icon">
-            <i class="ion ion-pie-graph"></i>
-          </div>
-          <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-        </div>
-      </div>
-      <!-- ./col -->
-    </div>
-
+      
+      
   </section>
+
+  <div class="modal fade" id="todayChartModal" tabindex="-1" role="dialog" aria-labelledby="todayChartModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="todayChartModalLabel">今日销售统计</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="todayMain" style="width: 100%;height:400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 库存信息模态框 -->
+  <div class="modal fade" id="inventoryModal" tabindex="-1" role="dialog" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">  <!-- 增加 modal-lg 类来增大模态框 -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="inventoryModalLabel">库存信息</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="inventory-chart" style="width: 100%;height:400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="chartModal" tabindex="-1" role="dialog" aria-labelledby="chartModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="chartModalLabel">销量统计</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="main" style="width: 100%;height:400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- /.content -->
   {% endblock %}
   {% block Sidebar_Menu %}
@@ -118,3 +164,197 @@
 
   </ul>
   {% endblock%}
+
+  {% block extra_scripts %}
+  <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.2/echarts.min.js"></script>
+  <script>
+  $('#chartModal').on('shown.bs.modal', function (e) {
+  var chartDom = document.getElementById('main');
+  var myChart = echarts.init(chartDom);
+
+  $.get("/statistics", function(data){
+    // Parse the returned data
+    var lineSourceData = JSON.parse(data.line_data);
+
+    // Calculate the last day's sales ratio
+    var lastDaySales = lineSourceData.slice(1).map(productSales => {
+      return {
+        name: productSales[0],
+        value: productSales[productSales.length - 1]
+      };
+    });
+    var option = {
+      tooltip: {
+        trigger: 'axis',
+        showContent: false
+      },
+      legend: {},
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+      },
+      yAxis: {
+        type: 'value'
+      },
+      grid: {
+        top: '55%' // 将折线图放置在下方
+      },
+      dataset: [{
+        id: 'sales',
+        source: lineSourceData,
+        dimensions: lineSourceData[0],
+        sourceHeader: false
+      }],
+      series: lineSourceData.slice(1).map(function(_, i) {
+        return {
+          type: 'line',
+          seriesLayoutBy: 'row',
+          encode: {
+            x: 'date',
+            y: i + 1
+          },
+          smooth: true,
+          datasetIndex: 0,
+        };
+      }).concat([{
+        type: 'pie',
+        id: 'salesPie',
+        radius: '30%',
+        center: ['50%', '25%'],
+        data: lastDaySales,
+        label: {
+          formatter: '{b}: {@[1]} ({d}%)'
+        },
+        emphasis: {
+          focus: 'self'
+        },
+      }])
+    };
+    myChart.on('updateAxisPointer', function (event) {
+      const xAxisInfo = event.axesInfo[0];
+      if (xAxisInfo) {
+        const dimension = xAxisInfo.value ;
+        const pieData = lineSourceData.slice(1).map(productSales => {
+          return {
+            name: productSales[0],
+            value: productSales[dimension]
+          };
+        });
+        myChart.setOption({
+          series: [{
+            id: 'salesPie',
+            data: pieData,
+            label: {
+              formatter: '{b}: {@[1]} ({d}%)'
+            },
+          }]
+        });
+      }
+    });
+
+    myChart.setOption(option);
+  });
+});
+
+
+$('#todayChartModal').on('shown.bs.modal', function (e) {
+  setTimeout(function() {
+    var chartDom = document.getElementById('todayMain');
+    var myChart = echarts.init(chartDom);
+
+    $.get("/todaysales", function(data){
+      // Parse the returned data
+      var barSourceData = JSON.parse(data.bar_data);
+      var option = {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      xAxis: {
+        type: 'category',
+        data: barSourceData.map(item => item[0])
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        data: barSourceData.map(item => item[1]),
+        type: 'bar',
+        showBackground: true,
+        backgroundStyle: {
+          color: 'rgba(220, 220, 220, 0.8)'
+        }
+      }]
+    };
+
+    myChart.setOption(option);
+  });
+}, 0);
+});
+
+
+$('#more-info-link').on('click', function(e) {
+  e.preventDefault();
+
+  $.get("/warehouse_inventory", function(response){
+    var chartDom = document.getElementById('inventory-chart');
+    var myChart = echarts.init(chartDom);
+
+    var option = {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '10%',  // 设置图表距离容器左边的距离
+        right: '10%',  // 设置图表距离容器右边的距离
+        top: '20%',  // 设置图表距离容器顶部的距离
+        bottom: '20%',  // 设置图表距离容器底部的距离
+      },
+      legend: {
+        data: response.data.map(function(item) {
+          return item.name;
+        }),
+        orient: 'horizontal',  // 设置图例为水平方向
+        left: 'center',  // 设置图例的水平位置为中心
+        top: 'top'  // 设置图例的垂直位置为顶部
+      },
+      xAxis: {
+        type: 'category',
+        data: response.commodity_names,
+        axisLabel: {
+          show: true
+        }
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: response.data.map(function(item) {
+        return {
+            ...item,
+            type: 'bar',
+        };
+      })
+    };        
+    myChart.setOption(option);
+    
+    // Modal show event
+    $('#inventoryModal').on('shown.bs.modal', function () {
+        // resize the chart after modal is shown
+        myChart.resize();
+    });
+    
+    // open the modal
+    $('#inventoryModal').modal('show');
+  });
+});
+
+
+ 
+    </script>
+
+{% endblock %}

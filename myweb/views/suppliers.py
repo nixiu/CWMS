@@ -7,37 +7,44 @@ from django.core.paginator import Paginator  # 分页用
 from datetime import datetime
 import random
 from myweb.models import Corporation
-
+from django.core.cache import cache
 
 def index(request,pIndex):
     """浏览信息"""
-    umod =  Corporation.objects
-    mywhere=[]#封装条件
-    ulist = umod.filter(cor_type=2)#1类型为客户  2为供货商  
+    cache_key = "corporation1_list"
+    cached_data = cache.get(cache_key)
 
-    # 获取、判断并封装关keyword键搜索
-    kw = request.GET.get("keyword",None)
-    if kw:
-        # 查询客户姓名或电话中只要含有关键字的都可以
-        ulist = ulist.filter( Q(cor_name__contains=kw) | Q(cor_phone__contains=kw))
-        mywhere.append("keyword="+kw)
+    if cached_data:
+        # 如果缓存中存在数据，则直接使用缓存数据
+        ulist = cached_data
+    else:
+        umod = Corporation.objects
+        ulist = umod.filter(cor_type=2)  # 1类型为客户  2为供货商  
 
         
+
+        # 将数据缓存到Redis中，有效期设置为1小时
+        cache.set(cache_key, ulist, timeout=3600)
+    # 获取、判断并封装关keyword键搜索
+    kw = request.GET.get("keyword", None)
+    if kw:
+        # 查询客户姓名或电话中只要含有关键字的都可以
+        ulist = ulist.filter(Q(cor_name__contains=kw) | Q(cor_phone__contains=kw))
     # 执行分页处理
     pIndex = int(pIndex)
     page = Paginator(ulist, 10)  # 以10条每页创建分页对象
     maxpages = page.num_pages  # 最大页数
-    
-    # p判断页数是否越界
+
+    # 判断页数是否越界
     if pIndex > maxpages:
         pIndex = maxpages
     if pIndex < 1:
         pIndex = 1
-    list2 = page.page(pIndex)#获取当前页数据
-    plist = page.page_range#获取页码列表信息
+    list2 = page.page(pIndex)  # 获取当前页数据
+    plist = page.page_range  # 获取页码列表信息
     
     # 封装信息加载模板
-    context= {"Corporationlist":list2, 'plist':plist, 'pIndex':pIndex, 'maxpages':maxpages, 'mywhere':mywhere}
+    context = {"Corporationlist": list2, 'plist': plist, 'pIndex': pIndex, 'maxpages': maxpages}
 
     return render(request, 'suppliers/index.html', context)
 
@@ -55,6 +62,8 @@ def insert(request):
         ob.cor_phone=request.POST["phone"]
         ob.cor_contact=request.POST["contact"]
         ob.save()
+        cache_key = "corporation1_list"
+        cache.delete(cache_key)
         context={"info":"添加成功！"}
     except Exception as err:
         print(err)
@@ -65,6 +74,8 @@ def delete(request, uid=0):
     """执行信息删除"""
     try:
         Corporation.objects.get(id=uid).delete()
+        cache_key = "corporation1_list"
+        cache.delete(cache_key)
         context = {"info":"删除成功！"}
     except Exception as err:
         print(err)
@@ -93,6 +104,8 @@ def update(request, uid):
         ob.cor_phone=request.POST["phone"]
         ob.cor_contact=request.POST["contact"]
         ob.save()
+        cache_key = "corporation1_list"
+        cache.delete(cache_key)
         context={"info":"修改成功！"}
     except Exception as err:
         print(err)

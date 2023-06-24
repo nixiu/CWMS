@@ -1,1 +1,1 @@
-按照django 后到达当前目录使用 python manage.py runserver 启动服务
+安装django 后到达当前目录使用 python manage.py runserver 启动服务

@@ -34,7 +34,8 @@ def index(request,pIndex):
         pIndex = 1
     list2 = page.page(pIndex)#获取当前页数据
     plist = page.page_range#获取页码列表信息
-    
+    print("aaaaaaaaaaaaaaaaaa")
+    print(list2[0].total)
     # 封装信息加载模板
     context= {"Warehouselist":list2, 'plist':plist, 'pIndex':pIndex, 'maxpages':maxpages, 'mywhere':mywhere}
 

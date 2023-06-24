@@ -197,6 +197,7 @@ class Orders(models.Model):
         db_table = 'orders'
 
 class OInclude(models.Model):
+    id = models.AutoField(primary_key=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     quantity =models.DecimalField(max_digits=10, decimal_places=2)
     commodity = models.ForeignKey(Commodity, models.CASCADE)

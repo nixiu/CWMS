@@ -7,7 +7,11 @@ urlpatterns = [
     path('login', index.login, name="myweb_login"),
     path('dologin', index.dologin, name="myweb_dologin"),
     path('logout', index.logout, name="myweb_logout"),
-    
+
+    #销量统计
+    path('statistics',index.statistics,name='statistics'),
+    path('todaysales',index.todaysales,name='todaysales'),
+    path('warehouse_inventory',index.warehouse_inventory,name='warehouse_inventory'),
     #员工账号管理
     path('employee/<int:pIndex>', employee.index, name='employee_index'),  # 浏览
     path('employee/add', employee.add, name='employee_add'),  # 添加表单
@@ -61,11 +65,12 @@ urlpatterns = [
     #销售单
     path('sale/<int:pIndex>', sale.index, name='sale_index'),  # 浏览
     path('sale/del/<int:uid>', sale.delete, name='sale_del'),  # 执行删除
-    path('sale/detail', sale.detail,name='sale_detail'), #订单的详情信息
+    path('sale/order_detail/<int:orderId>', sale.order_detail, name='order_detail'),  # 订单详情
+
 
     #进货单
     path('purchase/<int:pIndex>', purchase.index, name='purchase_index'),  # 浏览
     path('purchase/del/<int:uid>', purchase.delete, name='purchase_del'),  # 执行删除
-    path('purchase/detail', purchase.detail,name='sale_detail'), #订单的详情信息
+    path('purchase/order_detail/<int:orderId>', purchase.order_detail, name='order_detail'),  # 订单详情
 
 ]

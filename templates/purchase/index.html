@@ -20,19 +20,56 @@
         <div class="col-xs-12">
           <div class="box">
             <div class="box-header">
-              <h3 class="box-title">进货订单信息表</h3>
+              
               <!-- 搜索 -->
+              <div style="display: flex; justify-content: space-between;">
+                <h3 class="box-title">进货订单信息表</h3>
+              <div class="box-tools" style="flex: 1; margin-left: 800px;" >
+                <form action="{% url 'purchase_index' 1 %}" method="get">
+                    <div class="input-group input-group-sm" style="width:150px;">
+
+                        <input type="text" id="datepicker" name="date" class="form-control" placeholder="选择日期" autocomplete="off" value="{{ date|default_if_none:'' }}">
+                        <!-- 新的日期选择器输入字段 -->
+                        <div class="input-group-btn">
+                            <button type="submit" class="btn btn-default"></button>
+                        </div>
+                    </div>
+                </form>
+                
+              </div>
+            
               <div class="box-tools">
                 <form action="{% url 'purchase_index' 1 %}" method="get">
                   <div class="input-group input-group-sm" style="width:150px;">
-                    <input type="text" name="keyword" class="form-control pull-right" placeholder="供货商名称/日期"></input>
+                    <input type="text" name="keyword" class="form-control pull-right" placeholder="供货商名称/电话"></input>
                     <div class="input-group-btn">
                       <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
                     </div>
                   </div>
                 </form>
               </div>
-            </div>
+             </div>
+          </div>
+
+             <!-- Modal -->
+             <div id="orderDetailModal" class="modal fade" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="btn btn-primary btn-xs" onclick="getOrderDetail({{ vo.order.id }})">
+                      <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 详情
+                    </button>
+                  </div>
+                  <div id="orderDetailContent" class="modal-body">
+                    <!-- Order details will be inserted here by JavaScript -->
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                  </div>
+                </div><!-- /.modal-content -->
+              </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
             <!-- /.box-header -->
             <div class="box-body table-responsive no-padding">
               <table class="table table-hover">
@@ -49,16 +86,18 @@
                 {% for vo in orderlist %}
                 <tr>
                     <td>{{ vo.order.id }}</td>
-                    <td>{{ vo.order.type }}</td>
+                    <td>进货单</td>
                     <td>{{ vo.cor.cor_name }}</td>
                     <td>杨文涛</td>
                     <td>{{ vo.date }}</td>
                     <td>{{ vo.order.total }}</td>
                     <td>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="myModalLabel">订单详情</h4>
-                        <button type="button"  onclick="Dodel('{% url 'purchase_del' vo.order.id %}')" class="btn btn-danger btn-xs">
-                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> 删除</button>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <button type="button" class="btn btn-primary btn-xs" onclick="getOrderDetail({{ vo.order.id }})">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 详情
+                      </button>
+                      <button type="button"  onclick="Dodel('{% url 'purchase_del' vo.order.id %}')" class="btn btn-danger btn-xs">
+                      <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> 删除</button>
                     
                     </td>
                   </tr>
@@ -124,13 +163,13 @@
         <li><a href="{% url 'suppliers_index' 1 %}"> <i class="fa fa-circle-o"></i> 供货商</a></li>
       </ul>
     </li>
-    <li class="treeview">
+    <li class="treeview menu-open">
       <a href="orders.html"><i class="fa fa-shopping-cart"></i> <span>订单管理</span>
         <span class="pull-right-container">
-          <i class="fa fa-angle-right pull-down"></i>
+          <i class="fa fa-angle-down pull-down"></i>
         </span>
       </a>
-      <ul class="treeview-menu">
+      <ul class="treeview-menu" style="display: block;">
         <li><a href="{% url 'sale_index' 1 %}"> <i class="fa fa-circle-o"></i> 销售单</a></li>
         <li><a href="{% url 'purchase_index' 1 %}"> <i class="fa fa-circle-o"></i> 进货单</a></li>
         <li><a href="{% url 'addorder_index' 1 %}"> <i class="fa fa-circle-o"></i> 添加订单</a></li>
@@ -139,3 +178,70 @@
 
   </ul>
   {% endblock%}
+
+  {% block extra_scripts %}
+  <script src="{% static 'myweb/js/jquery.min.js'%}"></script>
+  <script src="{% static 'myweb/js/bootstrap.min.js'%}"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script type="text/javascript">
+    function doShow(id){
+        $.ajax({
+            type:'get',
+            url:"#",
+            dataType:'text',
+            data:{oid:id},
+            async: false,
+            success:function(res){
+                $("#myModal div.modal-body").empty().append(res);
+                $('#myModal').modal({keyboard:false})
+            },
+        });
+    }
+
+    function getOrderDetail(orderId) {
+    $.ajax({
+      url: "/purchase/order_detail/" + orderId,
+        type: "GET",
+        success: function(data) {
+            $("#orderDetailContent").html(data.rendered_html);
+            $("#orderDetailModal").modal('show');
+        }
+    });
+}
+$(document).ready(function() {
+  
+  var initialDate = $("#datepicker").val();
+  
+  $("#datepicker").datepicker({ 
+    dateFormat: 'yy-mm-dd',
+    
+    defaultDate: initialDate,
+    onSelect: function(selectedDate) {
+        var currentUrl = new URL(window.location.href);
+        var searchParams = currentUrl.searchParams;
+        searchParams.delete('date');  // 删除所有 date 参数
+        searchParams.set('date', selectedDate);  // 添加新的 date 参数
+        window.location.href = currentUrl.toString();
+    }
+  });
+  if (initialDate == "" || initialDate == "None") {
+    initialDate="选择日期";
+    $("#datepicker").attr("type", "text");
+    $("#datepicker").attr("placeholder", "选择日期");
+  }
+});    
+
+</script>
+
+<script>
+  $(document).ready(function(){
+    $(".treeview").click(function(){
+      if($(this).hasClass("menu-open")){
+        $(this).find(".pull-down").removeClass("fa-angle-down").addClass("fa-angle-right");
+      }else{
+        $(this).find(".pull-down").removeClass("fa-angle-right").addClass("fa-angle-down");
+      }
+    });
+  });
+  </script>
+{% endblock%}

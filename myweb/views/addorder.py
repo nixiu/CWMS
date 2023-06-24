@@ -9,6 +9,7 @@ from django.urls import reverse
 from myweb.models import Commodity,Inventory,Warehouse,Corporation,Orders,Employee,CorSubmit,EmOrder,OInclude
 from django.utils import timezone
 import decimal
+from django.core.cache import cache
 def index(request,pIndex):
     """浏览信息"""
     umod = Inventory.objects.order_by("commodity__id")
@@ -107,7 +108,10 @@ def insert(request):
     try:
         # 执行订单信息添加
         od = Orders()#实例化一个订单
+        if 'ordertype' not in request.session or request.session['ordertype'] not in ['1', '2']:
+          request.session['ordertype'] = '1' # 默认为销售订单
         od.type=request.session['ordertype']#订单类型
+        
         od.date= timezone.now()#订单的时间
         od.total=request.session["total_money"]#订单总金额
         cs=CorSubmit()#实例化订单和往来单位的关系
@@ -141,8 +145,10 @@ def insert(request):
             war.total=war.total-decimal.Decimal(oi.amount)#库存金额更新
             inv.save()
             war.save()
+            cache_key = "sale_list"
+            cache.delete(cache_key)
           else:
-            oi.amount=com["quantity"]*float(com["costprice"])
+            oi.amount=com["quantity"]*float(com["unitprice"])
             inv=Inventory.objects.get(commodity=comm)#找到对应库存单
             inv.quantity=inv.quantity+decimal.Decimal(oi.quantity)#供货单加上商品
             inv.amount=inv.amount+decimal.Decimal(oi.amount)#增加金额
@@ -150,10 +156,14 @@ def insert(request):
             war.total=war.total+decimal.Decimal(oi.amount)#库存金额更新
             inv.save()
             war.save()
+            cache_key = "purchase_list"
+            cache.delete(cache_key)
           oi.type=request.session["ordertype"]
           oi.save()#储存数据
         eo.save()#储存数据
         cs.save()#储存数据
+        cache_key = "commodity_list"
+        cache.delete(cache_key)
         del request.session['addorderlist']  
         del request.session['total_money']
         return HttpResponse("Y")
