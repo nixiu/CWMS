@@ -65,22 +65,24 @@
                     </td>
                     <td>{{vo.phone}}</td>
 
+                    {% if request.session.adminuser.type == 0 %}
                     <td>
                         <a type="button" href="{% url 'employee_edit' vo.id %}" class="btn btn-success btn-xs">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> 编辑</a>
                         <button type="button"  onclick="Dodel('{% url 'employee_del' vo.id %}')" class="btn btn-danger btn-xs">
                         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> 删除</button>
-                    
                     </td>
+                    {% endif %}
                   </tr>
                 {% endfor %}
               </table>
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">
+              {% if request.session.adminuser.type == 0 %}
               <a role="button" href="{% url 'employee_add' %}" class="btn btn-primary">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加员工</a>
-
+              {% endif %}
               <ul class="pagination pagination-sm no-margin pull-right">
                 
                 <li><a href="{% url 'employee_index' pIndex|add:-1 %}?{{mywhere|join:'&'}}">&laquo;</a></li><!--上一页按钮-->

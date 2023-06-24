@@ -22,7 +22,8 @@ def index(request,pIndex):
     if cached_data:
         cs=cached_data
     else:
-        cs=CorSubmit.objects.filter(order__type=1).order_by('order__date')
+        #按日期排序最新的日期应该排在前面
+        cs=CorSubmit.objects.filter(order__type=1).order_by('-order__date')
         cache.set(cache_key, cs, 3600)
     mywhere=[]#封装条件
 

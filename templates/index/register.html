@@ -25,7 +25,6 @@
   <link rel="stylesheet" href="{% static 'myweb/local/css/google_fonts.css' %}">
 </head>
 <body class="hold-transition login-page" style="background:url('{% static 'myweb/images/background.jpg' %}') no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;overflow: hidden;"></body>
-
 <div class="login-box">
   <div class="login-logo">
     <a href="index2.html" style="text-shadow: 2px 2px 4px #ffffff;"><b>商品批发系统后台管理</b></a>
@@ -34,24 +33,29 @@
   <div class="login-box-body">
     <p class="login-box-msg" style="color:red">{{ info }}</p>
 
-    <form action="{% url 'myweb_dologin' %}" method="post">
+    <form action="{% url 'myweb_register' %}" method="post">
       {% csrf_token %}
       <div class="form-group has-feedback">
-        <input type="text" name="user_name" class="form-control" placeholder="账号">
+        <input type="text" name="name" class="form-control" placeholder="姓名">
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+      </div>
+      <div class="form-group has-feedback">
+        <input type="text" name="user_name" class="form-control" placeholder="用户名">
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
         <input type="password" name="password" class="form-control" placeholder="密码">
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
+      <div class="form-group has-feedback">
+        <input type="text" name="phone" class="form-control" placeholder="电话">
+        <span class="glyphicon glyphicon-phone form-control-feedback"></span>
+      </div>
       <div class="row">
         <div class="col-xs-12">
-          <button type="submit" class="btn btn-primary btn-block btn-flat">登录</button>
+          <button type="submit" class="btn btn-primary btn-block btn-flat">注册</button>
+        </div>
       </div>
-      <div class="col-xs-12" style="margin-top: 10px;">
-        <p style="text-align: center;">还没有账户？<a href="{% url 'myweb_register' %}" style="color: blue;">注册</a></p>
-      </div>
-        <!-- /.col -->
     </form>
 
 
@@ -59,6 +63,7 @@
   <!-- /.login-box-body -->
 </div>
 <!-- /.login-box -->
+
 <!-- jQuery 3 -->
 <script src="{% static 'myweb/bower_components/jquery/dist/jquery.min.js' %}"></script>
 <!-- Bootstrap 3.3.7 -->

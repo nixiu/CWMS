@@ -7,7 +7,7 @@ urlpatterns = [
     path('login', index.login, name="myweb_login"),
     path('dologin', index.dologin, name="myweb_dologin"),
     path('logout', index.logout, name="myweb_logout"),
-
+    path('register', index.register, name='myweb_register'),
     #销量统计
     path('statistics',index.statistics,name='statistics'),
     path('todaysales',index.todaysales,name='todaysales'),

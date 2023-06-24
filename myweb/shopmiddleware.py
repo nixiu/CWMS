@@ -7,24 +7,25 @@ import re
 class ShopMiddleware(object):
     def __init__(self, get_response):
         self.get_response = get_response
-        # One-time configuration and initialization.
-        print("ShopMiddleware")
+        print("ShopMiddleware initialized")
 
     def __call__(self, request):
-
         # 获取当前请求路径
         path = request.path
-        #print("mycall..."+path)
+        print(f"Processing request for {path}")
 
-        # 后台请求路由判断
-        # 定义网站后台不用登录也可访问的路由url
-        urllist = ['/login','/dologin','/logout']
-        # 判断当前请求是否是访问网站后台,并且path不在urllist中
-        if re.match(r"^/employee",path) and (path not in urllist):
+        # 定义不用登录也可访问的路由url
+        urllist = ['/login','/dologin','/logout','/register']
+        # 判断当前请求的path是否不在urllist中
+        if path not in urllist:
             # 判断当前用户是否没有登录
-            if "adminuser" not in request.session:
+            if 'adminuser' not in request.session:
+                print("User not logged in, redirecting to login page")
                 # 执行登录界面跳转
                 return redirect(reverse('myweb_login'))
-            
-        
-      
+
+            print(f"User logged in as {request.session['adminuser']}, processing request")
+
+        # 对于其他情况，获取下一个中间件或视图的响应
+        response = self.get_response(request)
+        return response

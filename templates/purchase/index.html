@@ -96,8 +96,11 @@
                       <button type="button" class="btn btn-primary btn-xs" onclick="getOrderDetail({{ vo.order.id }})">
                         <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> 详情
                       </button>
+                      {% if request.session.adminuser.type == 0 %}
                       <button type="button"  onclick="Dodel('{% url 'purchase_del' vo.order.id %}')" class="btn btn-danger btn-xs">
+                      
                       <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> 删除</button>
+                      {% endif %}
                     
                     </td>
                   </tr>

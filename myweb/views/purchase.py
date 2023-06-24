@@ -22,7 +22,7 @@ def index(request,pIndex):
     if cached_data:
         cs=cached_data
     else:
-      cs=CorSubmit.objects.filter(order__type=2)#找到对应的订单
+      cs=CorSubmit.objects.filter(order__type=2).order_by('-order__date')#找到对应的订单
       cache.set(cache_key, cs, 3600)
     mywhere=[]#封装条件
 
@@ -35,7 +35,6 @@ def index(request,pIndex):
         mywhere.append("keyword="+kw)
     # 获取、判断并封装日期搜索
     date_filter = request.GET.get("date", None)
-    print("date_filter",date_filter)
     if date_filter:
       try:
           # 转换日期字符串为datetime对象

@@ -17,8 +17,6 @@ from django.contrib import admin
 from django.urls import path,include
 
 urlpatterns = [
-    #path('admin/', admin.site.urls),
-    path('admin/', include('loginas.urls')),
-    path('admin/', admin.site.urls),
-    path("",include("myweb.urls"))
+    path("",include("myweb.urls")),#将app的urls导入
+    path('captcha/', include('captcha.urls')),  # captcha
 ]

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myweb',#将app导入
     'loginas',#导入loginas
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'myweb.shopmiddleware.ShopMiddleware',#自定义中间件
+    'myweb.shopmiddleware.ShopMiddleware',#自定义中间件
 ]
 
 ROOT_URLCONF = 'CWMS.urls'

@@ -13,8 +13,13 @@ from decimal import Decimal
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from datetime import datetime, timedelta
-import decimal
+from django.contrib.auth.hashers import make_password, check_password
+from django.core.cache import cache
 # Create your views here.
+from django import forms
+from captcha.fields import CaptchaField
+import hashlib
+import random
 
 def index(request):
   request.session['ordertype']=1
@@ -33,6 +38,13 @@ def index(request):
   context={"corlen":corlen,"warcount":warcount,"orlen":orlen,"today_orders_count":today_orders_count}
   return render(request,'index/index.html',context)
 
+
+class RegisterForm(forms.Form):
+    name = forms.CharField()
+    user_name = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    phone = forms.CharField()
+    captcha = CaptchaField()
   # 管理员登录表单
 def login(request):
     print(1)
@@ -41,30 +53,26 @@ def login(request):
 
 # 提交管理员登录表单
 def dologin(request):
-    print(2)
-    print(request)
     try:
-        user = Employee.objects.get(username=request.POST['user_name'])
+        user = Employee.objects.get(user_name=request.POST['user_name'])
         print("账号:", user.user_name)
         print("状态：",user.type)
-        if user.type == 0:
-            md5 = hashlib.md5()
-            s = request.POST['password'] + user.password_salt
-            md5.update(s.encode('utf-8'))
-            if user.password_hash == md5.hexdigest():
-                print("登录成功！")
-                # 将当前成功登陆的账号以字典的形式写入session
-                request.session['adminuser'] = user.toDict()
-                return redirect(reverse("index"))
-            else:
-                context = {"info":"登录密码错误！"}
+        
+        md5 = hashlib.md5()
+        s = request.POST['password'] + user.password_salt
+        md5.update(s.encode('utf-8'))
+        if user.password_hash == md5.hexdigest():
+            print("登录成功！")
+            # 将当前成功登陆的账号以字典的形式写入session
+            request.session['adminuser'] = user.toDict()
+            return redirect(reverse("index"))
         else:
-            context = {"info":"无效的登录账户！"}  
+            context = {"info":"登录密码错误！"}
+        
     except Exception as err:
         print(err)
         context = {"info":"登录的账号不存在"}
-    print(2)
-    print(request)
+
     return render(request, "index/login.html", context)
         
 
@@ -73,6 +81,47 @@ def logout(request):
     del request.session['adminuser']
     return render(request, "index/login.html")
 
+
+def register(request):
+    if request.method == 'POST':
+        if request.method == 'POST':
+          form = RegisterForm(request.POST)
+          print(form)
+          
+          name = request.POST.get('name')
+          user_name = request.POST.get('user_name')
+          password = request.POST.get('password')
+          phone = request.POST.get('phone')
+
+          if not all([name, user_name, password, phone]):
+              # One or more fields are empty
+              return render(request, 'register.html', {'error': '所有字段都是必填项'})
+
+          if Employee.objects.filter(user_name=user_name).exists():
+              # Username is already taken
+              return render(request, 'register.html', {'error': '用户名已被使用'})
+
+          # Create the new user
+          new_user = Employee()
+          new_user.name = name
+          new_user.user_name = user_name
+          
+          md5 = hashlib.md5()
+          n = random.randint(100000, 999999)
+          s = request.POST['password']+str(n)#获取密码并添加干扰值
+          md5.update(s.encode('utf-8'))
+          new_user.password_hash = md5.hexdigest()
+          new_user.password_salt = n
+          new_user.phone = phone
+          new_user.type = 2
+          new_user.save()
+          cache_key = "employee_list"
+          cache.delete(cache_key)
+          
+        return redirect('myweb_login')
+
+    # If the request is a GET request, render the registration page
+    return render(request, 'index/register.html')
 #销量统计
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
